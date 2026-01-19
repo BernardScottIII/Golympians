@@ -40,16 +40,16 @@ final class ActivityViewModel: ObservableObject {
         }
     }
     
-    func binding(for activityId: String) -> Binding<DBActivity>? {
-        guard let index = activities.firstIndex(where: {$0.activity.id == activityId }) else {
-            return nil
-        }
-        
-        return Binding(
-            get: {self.activities[index].activity},
-            set: {self.activities[index] = WorkoutActivity(activity: $0, exercise: self.activities[index].exercise)}
-        )
-    }
+    //    func binding(for activityId: String) -> Binding<DBActivity>? {
+    //        guard let index = activities.firstIndex(where: {$0.activity.id == activityId }) else {
+    //            return nil
+    //        }
+    //
+    //        return Binding(
+    //            get: {self.activities[index].activity},
+    //            set: {self.activities[index] = WorkoutActivity(activity: $0, exercise: self.activities[index].exercise)}
+    //        )
+    //    }
     
     func removeFromWorkout(workoutId: String, activityId: String) {
         Task {
@@ -93,16 +93,46 @@ final class ActivityViewModel: ObservableObject {
     func addEmptyActivitySet(workoutId: String, activity: DBActivity) {
         Task {
             try await dataService.addEmptyActivitySet(workoutId: workoutId, activity: activity)
+            getAllActivities(workoutId: workoutId)
         }
     }
     
-    func addActivitySet(workoutId: String, activityId: String, set: [String:Any]) async throws {
+    func addActivitySet(workoutId: String, activityId: String, set: DBActivitySet) async throws {
         try await dataService.addActivitySet(workoutId: workoutId, activityId: activityId, set: set)
     }
     
-    func removeActivitySet(workoutId: String, activityId: String, set: [String:Any]) {
+    func removeActivitySet(workoutId: String, activityId: String, set: DBActivitySet) {
         Task {
             try await dataService.removeActivitySet(workoutId: workoutId, activityId: activityId, set: set)
+            getAllActivities(workoutId: workoutId)
         }
+    }
+    
+    func updateActivitySet(workoutId: String, activity: DBActivity, updatedSet: DBActivitySet) {
+        var newActivity = activity
+        
+        guard let index = newActivity.activitySets.firstIndex(where: { $0.id == updatedSet.id }) else {
+            return
+        }
+        
+        newActivity.activitySets[index] = updatedSet
+        
+        updateActivity(workoutId: workoutId,activity: newActivity)
+    }
+    
+    func deleteActivitySet(workoutId: String, activity: DBActivity, set: DBActivitySet) {
+        var newActivity = activity
+        
+        newActivity.activitySets.removeAll { $0.id == set.id }
+        
+        // Reindex
+        newActivity.activitySets = newActivity.activitySets
+            .enumerated()
+            .map { index, set in
+                set.withIndex(index)
+            }
+        
+        updateActivity(workoutId: workoutId,activity: newActivity)
+        getAllActivities(workoutId: workoutId)
     }
 }

@@ -66,7 +66,7 @@ struct ExerciseDetailsView: View {
         instructions: ["Sit down at keyboard", "start typing", "nothing works", "cry"],
         gifUrl: "google.com",
         uuid: "SampleUserID",
-        setType: .resistanceSet
+        setType: .resistance
     )
     NavigationStack {
         NavigationLink("Exercise Details View") {

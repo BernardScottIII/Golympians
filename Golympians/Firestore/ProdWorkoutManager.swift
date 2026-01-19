@@ -85,24 +85,27 @@ extension ProdWorkoutManager {
     func addWorkoutActivity(workoutId: String, exercise: APIExercise) async throws {
         let document = workoutActivityCollection(workoutId: workoutId).document()
         let documentId = document.documentID
-        let exerciseCount = workoutActivityCollection(workoutId: workoutId).count
-        let snapshot = try await exerciseCount.getAggregation(source: .server)
+        let exerciseCount = try await workoutActivityCollection(workoutId: workoutId).count.getAggregation(source: .server).count.intValue
         
-        var newSet:[String:Any] = [:]
-        newSet["set_index"] = 0
-        for key in exercise.setType.keys {
-            newSet[key] = ""
+        let initialSet: DBActivitySet
+        switch exercise.setType {
+        case .resistance:
+            initialSet = .resistance(DBResistanceSet(id: UUID().uuidString, setIndex: 0, weight: 0.0 ,repetitions: 0))
+        case .run:
+            initialSet = .run(DBRunSet(id: UUID().uuidString, setIndex: 0, distance: 0.0, elevation: 0.0, duration: 0.0))
+        case .swim:
+            initialSet = .swim(DBSwimSet(id: UUID().uuidString, setIndex: 0, distance: 0.0, laps: 0, duration: 0.0))
         }
         
-        let data: [String:Any] = [
-            DBActivity.CodingKeys.id.rawValue: documentId,
-            DBActivity.CodingKeys.exerciseId.rawValue: exercise.id!,
-            DBActivity.CodingKeys.setType.rawValue: exercise.setType.rawValue,
-            DBActivity.CodingKeys.workoutIndex.rawValue: snapshot.count, // 1 + the number of documents in the activities collection
-            DBActivity.CodingKeys.activitySets.rawValue: [newSet]
-        ]
+        let activity = DBActivity(
+            id: documentId,
+            exerciseId: exercise.id!,
+            setType: exercise.setType,
+            workoutIndex: exerciseCount,
+            activitySets: [initialSet]
+        )
         
-        try await document.setData(data, merge: false)
+        try document.setData(from: activity, merge: false)
     }
     
     func removeWorkoutActivity(workoutId: String, activityId: String) async throws {
@@ -124,24 +127,25 @@ extension ProdWorkoutManager {
     }
     
     func addEmptyActivitySet(workoutId: String, activity: DBActivity) async throws {
-        var newSet:[String:Any] = [:]
-        newSet["set_index"] = activity.activitySets.count
-        for key in activity.setType.keys {
-            newSet[key] = ""
+        let setIndex = activity.activitySets.count
+        var newSet: DBActivitySet
+            
+        switch activity.setType {
+        case .resistance: newSet = .resistance(DBResistanceSet(id: UUID().uuidString, setIndex: setIndex, weight: 0.0, repetitions: 0))
+        case .run: newSet = .run(DBRunSet(id: UUID().uuidString, setIndex: setIndex, distance: 0.0, elevation: 0.0, duration: 0.0))
+        case .swim: newSet = .swim(DBSwimSet(id: UUID().uuidString, setIndex: setIndex, distance: 0.0, laps: 0, duration: 0.0))
         }
-        
+            
         try await addActivitySet(workoutId: workoutId, activityId: activity.id, set: newSet)
     }
     
-    func addActivitySet(workoutId: String, activityId: String, set: [String:Any]) async throws {
-        let data: [String:Any] = [
-            DBActivity.CodingKeys.activitySets.rawValue : FieldValue.arrayUnion([set])
-        ]
-        
-        try await workoutActivityDocument(workoutId: workoutId, activityId: activityId).updateData(data)
+    func addActivitySet(workoutId: String, activityId: String, set: DBActivitySet) async throws {
+        var activity = try await getWorkoutActivity(workoutId: workoutId, activityId: activityId)
+        activity.activitySets.append(set)
+        try await updateWorkoutActivity(workoutId: workoutId, activity: activity)
     }
     
-    func removeActivitySet(workoutId: String, activityId: String, set: [String:Any]) async throws {
+    func removeActivitySet(workoutId: String, activityId: String, set: DBActivitySet) async throws {
         let data: [String:Any] = [
             DBActivity.CodingKeys.activitySets.rawValue : FieldValue.arrayRemove([set])
         ]

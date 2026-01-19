@@ -29,7 +29,7 @@ protocol WorkoutManagerProtocol {
     
     func addEmptyActivitySet(workoutId: String, activity: DBActivity) async throws
     
-    func addActivitySet(workoutId: String, activityId: String, set: [String:Any]) async throws
+    func addActivitySet(workoutId: String, activityId: String, set: DBActivitySet) async throws
     
-    func removeActivitySet(workoutId: String, activityId: String, set: [String:Any]) async throws
+    func removeActivitySet(workoutId: String, activityId: String, set: DBActivitySet) async throws
 }

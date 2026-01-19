@@ -13,7 +13,7 @@ struct CreateExerciseView: View {
     @State private var name: String = ""
     @State private var instructions: [String] = [""]
     @State private var numInstructions: Int = 1
-    @State private var setType: SetType = SetType.resistanceSet
+    @State private var setType: SetType = SetType.resistance
     @State private var targetMuscle: MuscleOption = MuscleOption.allMuscles
     @State private var equipment: EquipmentOption = EquipmentOption.noEquipment
     @State private var customEquipment: String = ""

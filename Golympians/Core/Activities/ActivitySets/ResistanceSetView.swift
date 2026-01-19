@@ -8,29 +8,53 @@
 import SwiftUI
 
 struct ResistanceSetView: View {
-    @Binding var weight: String
-    @Binding var repetitions: String
-    
+    let set: DBResistanceSet
+    let onCommit: (DBActivitySet) -> Void
+
+    @State private var weight: Double
+    @State private var reps: Int
+
+    init(set: DBResistanceSet, onCommit: @escaping (DBActivitySet) -> Void) {
+        self.set = set
+        self.onCommit = onCommit
+        _weight = State(initialValue: set.weight)
+        _reps = State(initialValue: set.repetitions)
+    }
+
     var body: some View {
         HStack {
             
             Image(systemName: "scalemass.fill")
-            TextField("weight", text: $weight)
+            TextField("Weight", value: $weight, format: .number)
                 .keyboardType(.decimalPad)
-//                .focused
+                .onSubmit(commit)
             
             Image(systemName: "checkmark.arrow.trianglehead.counterclockwise")
-            TextField("repetitions", text: $repetitions)
+            TextField("Reps", value: $reps, format: .number)
                 .keyboardType(.numberPad)
-            
+                .onSubmit(commit)
         }
+        .onDisappear(perform: commit)
+    }
+
+    private func commit() {
+        onCommit(
+            .resistance(
+                DBResistanceSet(
+                    id: set.id,
+                    setIndex: set.setIndex,
+                    weight: weight,
+                    repetitions: reps
+                )
+            )
+        )
     }
 }
 
 #Preview {
-    @Previewable @State var weight: String = "11.5"
-    @Previewable @State var repetitions: String = "5"
+    @Previewable @State var weight: Double = 11.5
+    @Previewable @State var repetitions: Int = 5
     List {
-        ResistanceSetView(weight: $weight, repetitions: $repetitions)
+        ResistanceSetView(set: DBResistanceSet(id: "1234", setIndex: 0, weight: weight, repetitions: repetitions), onCommit: {_ in })
     }
 }

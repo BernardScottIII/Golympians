@@ -63,7 +63,7 @@ struct ActivityView: View {
                             Button("", systemImage: "plus") {
                                 if viewModel.activities.count < 10 {
                                     viewModel.addEmptyActivitySet(workoutId: workoutId, activity: workoutActivity.activity)
-                                    viewModel.getAllActivities(workoutId: workoutId)
+//                                    viewModel.getAllActivities(workoutId: workoutId)
                                 }
                             }
                             Button("", systemImage: "trash") {
@@ -114,7 +114,7 @@ struct ActivityView: View {
             userId: $userId,
             scrollTargetActivity: $scrollTargetActivity,
             workoutDataService: workoutDataService,
-            workoutId: "1"
+            workoutId: "064F0044-E158-47F1-AAD3-3EA4DEA0C1BF"
         )
     }
 }
