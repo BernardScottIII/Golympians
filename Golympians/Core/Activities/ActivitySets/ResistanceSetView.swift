@@ -13,6 +13,7 @@ struct ResistanceSetView: View {
 
     @State private var weight: Double
     @State private var reps: Int
+    @FocusState private var focusedField: Bool
 
     init(set: DBResistanceSet, onCommit: @escaping (DBActivitySet) -> Void) {
         self.set = set
@@ -26,15 +27,22 @@ struct ResistanceSetView: View {
             
             Image(systemName: "scalemass.fill")
             TextField("Weight", value: $weight, format: .number)
+                .focused($focusedField)
                 .keyboardType(.decimalPad)
                 .onSubmit(commit)
             
             Image(systemName: "checkmark.arrow.trianglehead.counterclockwise")
             TextField("Reps", value: $reps, format: .number)
+                .focused($focusedField)
                 .keyboardType(.numberPad)
                 .onSubmit(commit)
         }
         .onDisappear(perform: commit)
+        .onChange(of: focusedField) {
+            if focusedField == false {
+                commit()
+            }
+        }
     }
 
     private func commit() {

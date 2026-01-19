@@ -14,6 +14,7 @@ struct RunSetView: View {
     @State private var distance: Double
     @State private var duration: Double
     @State private var elevation: Double
+    @FocusState private var focusedField: Bool
 
     init(set: DBRunSet, onCommit: @escaping (DBActivitySet) -> Void) {
         self.set = set
@@ -28,21 +29,29 @@ struct RunSetView: View {
             
             Image(systemName: "point.bottomleft.forward.to.arrow.triangle.scurvepath.fill")
             TextField("distance", value: $distance, format: .number)
+                .focused($focusedField)
                 .keyboardType(.decimalPad)
                 .onSubmit(commit)
             
             Image(systemName: "barometer",)
             TextField("elevation", value: $elevation, format: .number)
+                .focused($focusedField)
                 .keyboardType(.decimalPad)
                 .onSubmit(commit)
             
             Image(systemName: "stopwatch.fill")
             TextField("duration", value: $duration, format: .number)
+                .focused($focusedField)
                 .keyboardType(.decimalPad)
                 .onSubmit(commit)
                 
         }
         .onDisappear(perform: commit)
+        .onChange(of: focusedField) {
+            if focusedField == false {
+                commit()
+            }
+        }
     }
     
     private func commit() {

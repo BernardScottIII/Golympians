@@ -14,6 +14,7 @@ struct SwimSetView: View {
     @State private var distance: Double
     @State private var duration: Double
     @State private var laps: Int
+    @FocusState private var focusedField: Bool
 
     init(set: DBSwimSet, onCommit: @escaping (DBActivitySet) -> Void) {
         self.set = set
@@ -28,19 +29,28 @@ struct SwimSetView: View {
             
             Image(systemName: "point.bottomleft.forward.to.arrow.triangle.scurvepath.fill")
             TextField("distance", value: $distance, format: .number)
+                .focused($focusedField)
                 .keyboardType(.decimalPad)
                 .onSubmit(commit)
             
             Image(systemName: "point.forward.to.point.capsulepath",)
             TextField("laps", value: $laps, format: .number)
+                .focused($focusedField)
                 .keyboardType(.numberPad)
                 .onSubmit(commit)
             
             Image(systemName: "stopwatch.fill")
             TextField("duration", value: $duration, format: .number)
+                .focused($focusedField)
                 .keyboardType(.decimalPad)
                 .onSubmit(commit)
             
+        }
+        .onDisappear(perform: commit)
+        .onChange(of: focusedField) {
+            if focusedField == false {
+                commit()
+            }
         }
     }
     
