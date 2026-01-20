@@ -16,7 +16,10 @@ struct CompleteProfileView: View {
     @State private var birthday: Date = Date.now
     @State private var weight: Double = 0.0
     @State private var selectedPhoto: PhotosPickerItem? = nil
+    @State private var imageData: Data? = nil
     @State private var url: URL? = nil
+    @State private var legacyMigrationAlert: Bool = false
+    
     @StateObject private var userAccountViewModel = UserAccountViewModel()
     private let dateRange: ClosedRange<Date> = {
         let calendar = Calendar.current
@@ -50,7 +53,13 @@ If you are seeing this screen, thank you for being an early adopter! We've just 
             
             Section("Profile Picture") {
                 PhotosPicker(selection: $selectedPhoto, matching: .images, photoLibrary: .shared()) {
-                    if url != nil {
+                    if let imageData, let uiImage = UIImage(data: imageData) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 108, height: 108)
+                            .clipShape(.circle)
+                    } else if let url {
                         AsyncImage(url: url) { image in
                             image
                                 .resizable()
@@ -66,12 +75,31 @@ If you are seeing this screen, thank you for being an early adopter! We've just 
                             Image(systemName: "person.circle.fill")
                                 .font(.system(size: 108))
                                 .foregroundStyle(.gray.opacity(0.7))
-                            
                             Text("Tap to upload profile picture")
                                 .frame(width: 96)
                                 .fontWeight(.bold)
                                 .multilineTextAlignment(.center)
                                 .foregroundStyle(colorScheme == .light ? .black : .white)
+                        }
+                    }
+                }
+                .onChange(of: selectedPhoto) { oldValue, newValue in
+                    guard let newValue else { return }
+                    Task {
+                        // 1) Show image immediately
+                        if let data = try? await newValue.loadTransferable(type: Data.self) {
+                            await MainActor.run { imageData = data }
+                        }
+
+                        // 2) Continue your existing upload + user reload flow
+                        do {
+                            try await userAccountViewModel.saveFirstProfileImage(item: newValue)
+                            try await userAccountViewModel.loadCurrentUser()
+                            if let photoURL = userAccountViewModel.user?.photoURL {
+                                await MainActor.run { url = URL(string: photoURL) }
+                            }
+                        } catch {
+                            // Handle errors (optionally reset imageData or show an alert)
                         }
                     }
                 }
@@ -195,6 +223,7 @@ If you are seeing this screen, thank you for being an early adopter! We've just 
         .padding()
         .onAppear {
             Task {
+                try await userAccountViewModel.migrateLegacyUser()
                 try await userAccountViewModel.loadCurrentUser()
             }
         }

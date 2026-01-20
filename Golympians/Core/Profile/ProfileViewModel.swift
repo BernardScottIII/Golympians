@@ -16,6 +16,9 @@ final class ProfileViewModel: ObservableObject {
     func loadMyProfile() async throws {
         let userId = try AuthenticationManager.shared.getAuthenticatedUser().uid
         let username = try await UserManager.shared.getUser(userId: userId).username
+        if username == "" {
+            throw Profile.ProfileError.missingUsername
+        }
         self.myProfile = try await loadProfile(username: username)
     }
     

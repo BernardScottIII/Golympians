@@ -62,4 +62,25 @@ final class UserAccountViewModel: ObservableObject {
             try await ProfileManager.shared.updatePhotoURL(username: user.username, path: nil, url: nil)
         }
     }
+    
+    func migrateLegacyUser() async throws {
+        print("started migration")
+        let authDataResult = try AuthenticationManager.shared.getAuthenticatedUser()
+        
+        // this ideally should check if username is nil, but username can never be nil, and birthday is always filled in
+        print("getting user")
+        do {
+            _ = try await UserManager.shared.getUser(userId: authDataResult.uid)
+        } catch {
+            let data = [
+                DBUser.CodingKeys.photoURL.rawValue:"",
+                DBUser.CodingKeys.photoImagePath.rawValue:"",
+                DBUser.CodingKeys.birthday.rawValue:Date.now,
+                DBUser.CodingKeys.username.rawValue:"",
+                DBUser.CodingKeys.weight.rawValue:0.0,
+                DBUser.CodingKeys.measurementUnit.rawValue:MeasurementUnits.imperial.rawValue
+            ] as [String : Any]
+            try await UserManager.shared.setUserData(userId: authDataResult.uid, data: data)
+        }
+    }
 }

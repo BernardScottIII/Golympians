@@ -21,13 +21,16 @@ struct TabbarView: View {
     @State private var exploreNavigationPath = NavigationPath()
     
     @Binding var showSignInView: Bool
+    @Binding var profileIncomplete: Bool
     let workoutDataService: WorkoutManagerProtocol
     
     init(
         workoutDataService: WorkoutManagerProtocol,
-        showSignInView: Binding<Bool>
+        showSignInView: Binding<Bool>,
+        profileIncomplete: Binding<Bool>
     ) {
         _showSignInView = showSignInView
+        _profileIncomplete = profileIncomplete
         self.workoutDataService = workoutDataService
     }
     
@@ -54,7 +57,7 @@ struct TabbarView: View {
             
             Tab("Profile", systemImage: "person", value: .profile) {
                 NavigationStack(path: $profileNavigationPath) {
-                    UserAccountView(showSignInView: $showSignInView, workoutDataService: workoutDataService)
+                    UserAccountView(showSignInView: $showSignInView, profileIncomplete: $profileIncomplete, workoutDataService: workoutDataService)
                 }
             }
         }
@@ -70,6 +73,6 @@ struct TabbarView: View {
 #Preview {
     TabbarView(
         workoutDataService: ProdWorkoutManager(workoutCollection: Firestore.firestore().collection("workouts")),
-        showSignInView: .constant(false)
+        showSignInView: .constant(false), profileIncomplete: .constant(false)
     )
 }

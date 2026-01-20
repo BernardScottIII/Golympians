@@ -60,6 +60,12 @@ struct Profile: Codable, Hashable {
         self.photoURL = photoURL
         self.photoPath = photoPath
     }
+    
+    enum ProfileError: Error {
+        case missingUsername
+        case notAuthenticated
+        case invalidState(String)
+    }
 }
 
 final class ProfileManager {

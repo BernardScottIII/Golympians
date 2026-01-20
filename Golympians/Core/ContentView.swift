@@ -19,7 +19,7 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
-            TabbarView(workoutDataService: workoutDataService, showSignInView: $showSignInView)
+            TabbarView(workoutDataService: workoutDataService, showSignInView: $showSignInView, profileIncomplete: $profileIncomplete)
                 .environmentObject(healthManager)
         }
         .onAppear {

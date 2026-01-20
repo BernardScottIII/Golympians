@@ -102,9 +102,6 @@ struct SignInExistingUser: View {
         .padding()
         .navigationTitle("Sign Into Golympians")
         .alert("No Account Found", isPresented: $alertToSignUp) {
-//            Button("Create Account", action: {
-//                SignUpNewUser()
-//            })
             NavigationLink("Create New Account") {
                 SignUpNewUser(showSignInView: $showSignInView)
             }

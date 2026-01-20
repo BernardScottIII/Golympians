@@ -19,6 +19,7 @@ struct UserAccountView: View {
     @State private var followingCount: Int = 0
     
     @Binding var showSignInView: Bool
+    @Binding var profileIncomplete: Bool
     let workoutDataService: WorkoutManagerProtocol
     
     var body: some View {
@@ -45,7 +46,11 @@ struct UserAccountView: View {
         .scrollDisabled(true)
         .task {
             try? await viewModel.loadCurrentUser()
-            try? await profileViewModel.loadMyProfile()
+            do {
+                try await profileViewModel.loadMyProfile()
+            } catch {
+                profileIncomplete = true
+            }
             if let profile = profileViewModel.myProfile {
                 followerCount = profile.followers.count
                 followingCount = profile.following.count
@@ -62,6 +67,17 @@ struct UserAccountView: View {
                 userId = try AuthenticationManager.shared.getAuthenticatedUser().uid
             }
         })
+        .onChange(of: profileIncomplete) {
+            if profileIncomplete == false {
+                Task {
+                    try await profileViewModel.loadMyProfile()
+                    if let profile = profileViewModel.myProfile {
+                        followerCount = profile.followers.count
+                        followingCount = profile.following.count
+                    }
+                }
+            }
+        }
         .navigationTitle("Profile")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -87,6 +103,7 @@ struct UserAccountView: View {
     NavigationStack {
         UserAccountView(
             showSignInView: .constant(false),
+            profileIncomplete: .constant(false),
             workoutDataService: ProdWorkoutManager(workoutCollection: Firestore.firestore().collection("workouts"))
         )
     }
