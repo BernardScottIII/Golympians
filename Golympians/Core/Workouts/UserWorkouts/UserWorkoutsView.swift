@@ -31,7 +31,14 @@ struct UserWorkoutsView: View {
     var body: some View {
         List {
             ForEach(viewModel.workouts) { workout in
-                NavigationLink(workout.name, value: workout)
+                NavigationLink(value: workout) {
+                    VStack (alignment: .leading) {
+                        Text(workout.name)
+                            .font(.title2)
+                        Text(workout.date.formatted())
+                            .font(.caption)
+                    }
+                }
             }
             .onDelete { indexSet in
                 removeWorkoutAlert = true
