@@ -59,7 +59,7 @@ struct ProfileView: View {
                 
                 Spacer()
                 
-                if let shareURL = URL(string:"https://golympians.github.io/profile/\(profile.username)") {
+                if let shareURL = URL(string:"https://golympians.com/profile/\(profile.username)") {
                     ShareLink(item: shareURL, message: Text("Check out \(profile.username)'s Golympians profile!")) {
                         Text("Share")
                     }
