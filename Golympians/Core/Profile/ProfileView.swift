@@ -14,6 +14,8 @@ struct ProfileView: View {
     @State private var followerCount: Int
     @State private var followingCount: Int
     
+//    private let shareURL = URL(string:"https://github.com/BernardScottIII/Golympians")!
+    
     let profile: Profile
     
     init(
@@ -56,15 +58,17 @@ struct ProfileView: View {
                 }
                 
                 Spacer()
-                Button {
-                    viewModel.removeFollower(profile, notFollowedBy: viewModel.myProfile)
-                } label: {
-                    Text("Share")
+                
+                if let shareURL = URL(string:"https://golympians.github.io/profile/\(profile.username)") {
+                    ShareLink(item: shareURL, message: Text("Check out \(profile.username)'s Golympians profile!")) {
+                        Text("Share")
+                    }
+                    .padding([.leading, .trailing], 32)
+                    .padding([.top, .bottom], 4)
+                    .background(Color.gray.opacity(0.4))
+                    .clipShape(.buttonBorder)
                 }
-                .padding([.leading, .trailing], 32)
-                .padding([.top, .bottom], 4)
-                .background(Color.gray.opacity(0.4))
-                .clipShape(.buttonBorder)
+                
                 Spacer()
             }
             Spacer()

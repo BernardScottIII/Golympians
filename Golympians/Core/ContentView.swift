@@ -11,6 +11,7 @@ import FirebaseFirestore
 struct ContentView: View {
     
     @EnvironmentObject private var healthManager: HealthManager
+    
     @State private var showSignInView: Bool = false
     @AppStorage("profileIncomplete") var profileIncomplete: Bool = true
     private var workoutDataService = ProdWorkoutManager(workoutCollection: Firestore.firestore().collection("workouts"))

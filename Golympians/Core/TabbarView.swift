@@ -8,12 +8,13 @@
 import SwiftUI
 import FirebaseFirestore
 
+enum TabbarTab: Hashable {
+    case workouts, insights, profile, explore
+}
+
 struct TabbarView: View {
-    enum TabbarTab: Hashable {
-        case workouts, insights, profile, explore
-    }
     
-    @State private var selectedTab: TabbarTab = .workouts
+    @EnvironmentObject private var deepLinkManager: DeepLinkManager
     
     @State private var workoutNavigationPath = NavigationPath()
     @State private var insightNavigationPath = NavigationPath()
@@ -35,7 +36,7 @@ struct TabbarView: View {
     }
     
     var body: some View {
-        TabView(selection: $selectedTab) {
+        TabView(selection: $deepLinkManager.selectedTab) {
             Tab("Workouts", systemImage: "dumbbell", value: .workouts) {
                 NavigationStack(path: $workoutNavigationPath) {
 //                    WorkoutsView(workoutDataService: workoutDataService)
@@ -61,11 +62,11 @@ struct TabbarView: View {
                 }
             }
         }
-        .onChange(of: selectedTab) {
-            if selectedTab == .workouts { workoutNavigationPath = NavigationPath() }
-            if selectedTab == .insights { insightNavigationPath = NavigationPath() }
-            if selectedTab == .profile { profileNavigationPath = NavigationPath() }
-            if selectedTab == .explore { exploreNavigationPath = NavigationPath() }
+        .onChange(of: deepLinkManager.selectedTab) {
+            if deepLinkManager.selectedTab == .workouts { workoutNavigationPath = NavigationPath() }
+            if deepLinkManager.selectedTab == .insights { insightNavigationPath = NavigationPath() }
+            if deepLinkManager.selectedTab == .profile { profileNavigationPath = NavigationPath() }
+            if deepLinkManager.selectedTab == .explore { exploreNavigationPath = NavigationPath() }
         }
     }
 }
@@ -76,3 +77,4 @@ struct TabbarView: View {
         showSignInView: .constant(false), profileIncomplete: .constant(false)
     )
 }
+

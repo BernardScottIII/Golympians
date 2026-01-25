@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ExploreView: View {
+    @EnvironmentObject private var deepLinkManager: DeepLinkManager
+    
     @StateObject private var viewModel = ExploreViewModel()
     @State private var searchText: String = ""
     
@@ -29,6 +31,14 @@ struct ExploreView: View {
         .navigationDestination(for: Profile.self, destination: { profile in
             ProfileView(profile: profile)
         })
+        .navigationDestination(isPresented: Binding<Bool>(
+            get: { deepLinkManager.navigatedToProfile != nil },
+            set: { _ in deepLinkManager.navigatedToProfile = nil }
+        )) {
+            if let profile = deepLinkManager.navigatedToProfile {
+                ProfileView(profile: profile)
+            }
+        }
         .onAppear {
             Task {
                 try await viewModel.getProfiles()
