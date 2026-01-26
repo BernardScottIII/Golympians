@@ -40,17 +40,6 @@ final class ActivityViewModel: ObservableObject {
         }
     }
     
-    //    func binding(for activityId: String) -> Binding<DBActivity>? {
-    //        guard let index = activities.firstIndex(where: {$0.activity.id == activityId }) else {
-    //            return nil
-    //        }
-    //
-    //        return Binding(
-    //            get: {self.activities[index].activity},
-    //            set: {self.activities[index] = WorkoutActivity(activity: $0, exercise: self.activities[index].exercise)}
-    //        )
-    //    }
-    
     func removeFromWorkout(workoutId: String, activityId: String) {
         Task {
             try await dataService.removeWorkoutActivity(workoutId: workoutId, activityId: activityId)

@@ -46,7 +46,8 @@ final class WorkoutViewModel: ObservableObject {
             userId: AuthenticationManager.shared.getAuthenticatedUser().uid,
             name: name,
             description: description,
-            date: date
+            date: date,
+            isPublic: false
         )
         try await workoutDataService.createNewWorkout(workout: newWorkout)
         try await getAllWorkouts(descending: dateOption?.dateDescending)
@@ -56,5 +57,38 @@ final class WorkoutViewModel: ObservableObject {
     func filterDateOption(option: DateOption) async throws {
         self.dateOption = option
         try await self.getAllWorkouts(descending: dateOption?.dateDescending)
+    }
+    
+    private func replaceWorkoutInList(_ updated: DBWorkout) {
+        if let index = workouts.firstIndex(where: { $0.id == updated.id }) {
+            workouts[index] = updated
+        }
+    }
+
+    func refreshWorkout(workoutId: String) async throws {
+        let refreshed = try await workoutDataService.getWorkout(workoutId: workoutId)
+        replaceWorkoutInList(refreshed)
+    }
+    
+    func toggleWorkoutVisibility(workoutId: String) async throws {
+        if let index = workouts.firstIndex(where: { $0.id == workoutId }) {
+            // Optimistic local toggle
+            workouts[index].isPublic.toggle()
+            let updated = workouts[index]
+            do {
+                try await workoutDataService.updateWorkout(workout: updated)
+            } catch {
+                // Revert on failure
+                workouts[index].isPublic.toggle()
+                throw error
+            }
+        } else {
+            // Fallback: fetch, toggle, persist, then update local list if present
+            let workout = try await workoutDataService.getWorkout(workoutId: workoutId)
+            var updated = workout
+            updated.isPublic.toggle()
+            try await workoutDataService.updateWorkout(workout: updated)
+            replaceWorkoutInList(updated)
+        }
     }
 }

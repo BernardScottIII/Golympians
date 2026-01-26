@@ -24,6 +24,7 @@ struct DBWorkout: Identifiable, Codable, Hashable {
     var name: String
     var description: String
     var date: Date
+    var isPublic: Bool
 }
 
 final class ProdWorkoutManager: WorkoutManagerProtocol {
@@ -69,6 +70,10 @@ final class ProdWorkoutManager: WorkoutManagerProtocol {
         
         try await workoutDocument(workoutId: workoutId).delete()
     }
+    
+//    func toggleWorkoutVisibility(workout: DBWorkout) async throws {
+//        try workoutDocument(workoutId: workout.id).setData(from: workout, merge: true)
+//    }
 }
 
 // MARK: Workout Activity
