@@ -30,13 +30,5 @@
     "auth": {
       "port": 9099
     }
-  },
-  "hosting": {
-    "rewrites": [
-      {
-        "source": "/u/**",
-        "function": "profileOG"
-      }
-    ]
   }
 }
