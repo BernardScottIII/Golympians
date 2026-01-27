@@ -50,4 +50,5 @@ __exportStar(require("./handlers/onUserWorkoutCreate"), exports);
 __exportStar(require("./handlers/onActivitySetUpdate"), exports);
 __exportStar(require("./handlers/onActivityCreated"), exports);
 __exportStar(require("./scheduled/scheduledInsightCreation"), exports);
+__exportStar(require("./web/onProfileShare"), exports);
 //# sourceMappingURL=index.js.map
