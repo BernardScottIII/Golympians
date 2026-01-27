@@ -14,19 +14,15 @@ struct EditWorkoutView: View {
     @State private var userId: String = ""
     @State private var scrollTargetActivity: Int? = nil
     @State private var keyboardOnScreen: Bool = false
-    @State private var visibilityButtonText = "Not Initialized"
     
     @Binding var workout: DBWorkout
-    @ObservedObject var workoutViewModel: WorkoutViewModel
     var workoutDataService: WorkoutManagerProtocol
     
     init(
         workout: Binding<DBWorkout>,
-        workoutViewModel: WorkoutViewModel,
         workoutDataService: WorkoutManagerProtocol
     ) {
         self._workout = workout
-        self.workoutViewModel = workoutViewModel
         _activityViewModel = StateObject(wrappedValue: ActivityViewModel(dataService: workoutDataService))
         self.workoutDataService = workoutDataService
     }
@@ -42,25 +38,6 @@ struct EditWorkoutView: View {
                         .textInputAutocapitalization(.sentences)
                     
                     DatePicker("date", selection: $workout.date)
-                    
-                    HStack {
-                        Button("Visibility") {
-                            Task {
-                                try await workoutViewModel.toggleWorkoutVisibility(workoutId: workout.id)
-                            }
-                        }
-                        
-                        Spacer()
-                        
-                        Text(visibilityButtonText)
-                            .frame(width: 64, alignment: .trailing)
-                            .onAppear {
-                                visibilityButtonText = workout.isPublic ? "Public" : "Private"
-                            }
-                            .onChange(of: workout.isPublic) { _, newValue in
-                                visibilityButtonText = newValue ? "Public" : "Private"
-                            }
-                    }
                     
                     ActivityView(
                         viewModel: activityViewModel,
@@ -138,7 +115,7 @@ struct EditWorkoutView: View {
     
     private func saveWorkout() {
         Task {
-            try await workoutDataService.updateWorkout(workout: DBWorkout(id: workout.id, userId: workout.userId, name: workout.name, description: workout.description, date: workout.date, isPublic: workout.isPublic))
+            try await workoutDataService.updateWorkout(workout: DBWorkout(id: workout.id, userId: workout.userId, name: workout.name, description: workout.description, date: workout.date))
             /// I think this is fine because it's not forcing the main thread to wait, and instead will be called when
             /// the WorkoutManager is finished updating the workout
             dismiss()
@@ -147,9 +124,8 @@ struct EditWorkoutView: View {
 }
 
 #Preview {
-    @Previewable @State var workout = DBWorkout(id: UUID().uuidString, userId: UUID().uuidString, name: "Sample", description: "Example", date: .now, isPublic: false)
-    let workoutDataService = ProdWorkoutManager(workoutCollection: Firestore.firestore().collection("workouts"))
+    @Previewable @State var workout = DBWorkout(id: UUID().uuidString, userId: UUID().uuidString, name: "Sample", description: "Example", date: .now)
     NavigationStack {
-        EditWorkoutView(workout: $workout, workoutViewModel: WorkoutViewModel(workoutDataService: workoutDataService), workoutDataService: workoutDataService)
+        EditWorkoutView(workout: $workout, workoutDataService: ProdWorkoutManager(workoutCollection: Firestore.firestore().collection("workouts")))
     }
 }

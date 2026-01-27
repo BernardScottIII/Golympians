@@ -18,7 +18,6 @@ struct InternalVariableView: View {
     @StateObject private var profileViewModel: UserAccountViewModel
     @StateObject private var authenticationViewModel: AuthenticationViewModel
     @AppStorage("profileIncomplete") var profileIncomplete: Bool = false
-    @AppStorage("showUpdateView") var showUpdateView: Bool = false
     
     @State private var removeWorkoutField: String
     @State private var userExercisesList: [APIExercise]
@@ -48,12 +47,6 @@ struct InternalVariableView: View {
                 Text("AppStorage Variables")
                     .font(.title)
                 Toggle("Display Complete Profile Page", isOn: $profileIncomplete)
-            }
-            
-            Section {
-                Text("AppStorage Variables")
-                    .font(.title)
-                Toggle("Display Show Update View", isOn: $showUpdateView)
             }
             
             // MARK: Profile

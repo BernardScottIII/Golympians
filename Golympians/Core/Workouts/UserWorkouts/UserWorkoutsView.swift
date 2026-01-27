@@ -51,7 +51,6 @@ struct UserWorkoutsView: View {
         .navigationDestination(for: DBWorkout.self) { workout in
             EditWorkoutView(
                 workout: viewModel.binding(for: workout.id)!,
-                workoutViewModel: viewModel,
                 workoutDataService: viewModel.workoutDataService)
         }
         .navigationTitle("Workouts")
@@ -89,6 +88,9 @@ struct UserWorkoutsView: View {
                 .sheet(isPresented: $createWorkoutSheetIsPresented) {
                     CreateWorkoutView(viewModel: viewModel, path: $path, isPresented: $createWorkoutSheetIsPresented)
                 }
+//                NavigationLink("Add Workout") {
+//                    CreateWorkoutView(viewModel: viewModel, path: $path)
+//                }
             }
         }
         .alert(
